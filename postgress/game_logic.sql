@@ -4,7 +4,7 @@ create table unlockable_workers
     type          worker_type NOT NULL,
     surname       varchar(50) NOT NULL,
     name          varchar(50) NOT NULL,
-    patronymic    varchar(50),
+    patronymic    varchar(50),insert into workers(type, surname, name, patronymic, qualification)  values
     qualification integer     NOT NULL,
     UNIQUE (type, surname, name, patronymic)
 );
@@ -14,8 +14,7 @@ create table possible_tasks
     id           SERIAL PRIMARY KEY,
     service_type varchar(400) NOT NULL,
     description  varchar(400) NOT NULL,
-    difficulty   integer      not null,
-    room_id      integer references rooms (id) on delete cascade
+    difficulty   integer      not null
 );
 
 create table possible_services
@@ -30,5 +29,3 @@ create table possible_buildings
     address varchar(400),
     type    buildings_types
 );
-
-

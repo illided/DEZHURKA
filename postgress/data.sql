@@ -65,7 +65,7 @@ VALUES ('electrician', 'Электронов', 'Василий', 'Петрови
      , ('chairman', 'Агутин', 'Михаил', NULL, 2);
 
 
-insert into possible_tasks(type, description, difficulty)
+insert into possible_tasks(service_type, description, difficulty)
 values ('Починка электроснабжения', 'Кто-то украл все лампочки. Надо найти вора и поменять лампочку', -1),
        ('Починка электроснабжения', 'Починка третьей фазы седьмого к рыла', -1),
        ('Починка электроснабжения', 'Рассказать анекдот', -1),

@@ -4,7 +4,7 @@ create table unlockable_workers
     type          worker_type NOT NULL,
     surname       varchar(50) NOT NULL,
     name          varchar(50) NOT NULL,
-    patronymic    varchar(50),insert into workers(type, surname, name, patronymic, qualification)  values
+    patronymic    varchar(50),
     qualification integer     NOT NULL,
     UNIQUE (type, surname, name, patronymic)
 );
@@ -26,6 +26,7 @@ create table possible_services
 
 create table possible_buildings
 (
+    id SERIAL PRIMARY KEY,
     address varchar(400),
     type    buildings_types
 );

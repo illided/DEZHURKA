@@ -72,9 +72,9 @@ def get_workers(conn):
 def hire_worker(conn, worker_id):
     with conn.cursor() as cursor:
         cursor.execute(f"SELECT * FROM unlockable_workers WHERE id={worker_id}")
-        target = tuple([f"{str(x)}" for x in cursor.fetchone()])
+        target = ",".join([f"\'{x}\'" if x is not None else "DEFAULT" for x in cursor.fetchone()])
         cursor.execute(f"insert into workers(id, type, surname, name, patronymic, qualification)"
-                       f" values {target}")
+                       f" values ({target})")
 
 
 def fire_worker(conn, worker_id):
@@ -82,5 +82,30 @@ def fire_worker(conn, worker_id):
         cursor.execute(f"SELECT fire_worker({worker_id})")
 
 
-def get_buildings(conn):
-    pass
+def get_living_buildings(conn):
+    with conn.cursor() as cursor:
+        cursor.execute("SELECT * FROM buildings WHERE type=\'living\'")
+        served = cursor.fetchall()
+        where_statement = "" if len(served) == 0 else f"WHERE id NOT IN ({','.join([str(x[0]) for x in served])})"
+        cursor.execute(f"SELECT * FROM possible_buildings {where_statement}")
+        free = cursor.fetchall()
+    return served, free
+
+
+def get_technical_buildings(conn):
+    with conn.cursor() as cursor:
+        cursor.execute("SELECT * FROM buildings WHERE type=\'technical\'")
+        buildings = cursor.fetchall()
+    return buildings
+
+
+def add_building(conn, building_id):
+    with conn.cursor() as cursor:
+        cursor.execute(f"SELECT * FROM possible_buildings WHERE id={building_id}")
+        building = tuple([str(x) for x in cursor.fetchone()])
+        cursor.execute(f"INSERT INTO buildings(id, address, type) values {building}")
+
+
+def delete_building(conn, building_id):
+    with conn.cursor() as cursor:
+        cursor.execute(f"DELETE FROM buildings WHERE id={building_id}")

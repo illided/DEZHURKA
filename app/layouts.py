@@ -1,8 +1,10 @@
 import streamlit as st
 from logic import *
 
+
 def rerun():
     raise st.script_runner.RerunException(st.script_request_queue.RerunData(None))
+
 
 def workers_layout(conn):
     hired, free = get_workers(conn)
@@ -16,7 +18,7 @@ def workers_layout(conn):
 
     for worker in filtered_free + filtered_hired:
         FIO = ' '.join(worker[2:4]) + (f" {worker[4]}" if worker[4] is not None else "")
-        first.markdown(f"[{worker[1]} - {worker[5]}] {FIO}")
+        first.markdown(f"### [{worker[1]} - {worker[5]}] {FIO}")
 
     for worker in filtered_free:
         hire_buttons[worker[0]] = second.button("Нанять", key=worker[0])
@@ -33,5 +35,26 @@ def workers_layout(conn):
             fire_worker(conn, worker_id)
             rerun()
 
-def tasks_layout():
-    pass
+
+def building_layout(conn):
+    b_type = st.selectbox("Тип здания", ["Техническое", "Жилое"])
+    if b_type == "Жилое":
+        served, free = get_living_buildings(conn)
+        first, second = st.beta_columns([3, 1])
+
+        for building in free + served:
+            first.markdown(f"### {building[1]}")
+        add = {building_id: second.button("Добавить", key=building_id) for building_id in [x[0] for x in free]}
+        delete = {building_id: second.button("Удалить", key=building_id) for building_id in [x[0] for x in served]}
+        for building_id, button in add.items():
+            if button:
+                add_building(conn, building_id)
+                rerun()
+        for building_id, button in delete.items():
+            if button:
+                delete_building(conn, building_id)
+                rerun()
+    else:
+        technical = get_technical_buildings(conn)
+        for building in technical:
+            st.markdown(f"### {building[1]}")

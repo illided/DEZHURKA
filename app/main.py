@@ -16,7 +16,9 @@ if __name__ == '__main__':
     page = st.sidebar.selectbox("",["Задания", "Работники", "Предоставляемые услуги", "Обслуживаемые здания"])
     if page == "Работники":
         workers_layout(conn)
-    elif page == "Задания":
-        tasks_layout()
-    elif page == "Предоставляемые услуги":
-        pass
+    # elif page == "Задания":
+    #     tasks_layout()
+    # elif page == "Предоставляемые услуги":
+    #     services_layout()
+    elif page == "Обслуживаемые здания":
+        building_layout(conn)

@@ -3,6 +3,7 @@ create or replace procedure create_task(
     info varchar(400),
     building_address varchar(250),
     room integer default NULL,
+    creation_date date default current_date,
     completion_date date default NULL
 )
     language plpgsql as
@@ -16,7 +17,7 @@ begin
     _room_id = (select id from rooms where rooms.room_number = room and building = _building_id);
     _worker_type = (select worker_type from services where description = service_type);
     insert into tasks (type, description, assigned_at, deadline, building_id, room_id)
-    values (_worker_type, info, current_date, completion_date, _building_id, _room_id);
+    values (_worker_type, info, creation_date, completion_date, _building_id, _room_id);
 end;
 $$;
 

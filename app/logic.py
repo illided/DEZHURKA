@@ -1,6 +1,31 @@
 import random
 from random import choice
 
+def tables_setup(conn):
+    with conn.cursor() as cursor:
+        cursor.execute("""
+        truncate table services cascade;
+
+        truncate table service_assignment cascade;
+
+        truncate table reject_cause cascade;
+        
+        truncate table task_assignment cascade;
+        
+        truncate table workers cascade;
+        
+        truncate table tasks cascade;
+        
+        truncate table rooms cascade;
+        
+        truncate table buildings cascade;
+        
+        insert into buildings(id, address, type)
+        values (8, 'штаб Сантехников', 'technical'),
+       (9, 'Склад', 'technical'),
+       (10, 'ДЕЖУРКА', 'technical');
+        """)
+        cursor.execute("insert into services values (2, 'Починка электроснабжения', 'electrician')")
 
 def add_new_tasks(conn, difficulty, date):
     cursor = conn.cursor()
@@ -11,15 +36,17 @@ def add_new_tasks(conn, difficulty, date):
     cursor.execute("SELECT address FROM buildings")
     buildings = [x[0] for x in cursor.fetchall()]
 
+    service_string = ','.join([f"\'{x}\'" for x in services])
     cursor.execute(f"SELECT service_type, description FROM possible_tasks"
                    f" WHERE difficulty <= {difficulty}"
-                   f" AND service_type IN {tuple(services)}")
+                   f" AND service_type IN ({service_string})")
     tasks = cursor.fetchall()
 
     tasks_assigned = [[*choice(tasks), building] for building in buildings if random.randint(1, 4) == 4]
 
     for task in tasks_assigned:
-        cursor.execute(f"CALL create_task({task[0]}, {task[1]}, {task[2]}, {date}")
+        print(f"CALL create_task('{task[0]}', '{task[1]}', {task[2]}, {date})")
+        cursor.execute(f"CALL create_task('{task[0]}', '{task[1]}', '{task[2]}', creation_date :='{date}')")
 
 
 def check_answer(conn, task_id, choosen_dif):
@@ -49,11 +76,11 @@ def check_answer(conn, task_id, choosen_dif):
 
 
 def count_income(conn):
-    pass
+    return 100
 
 
 def count_lost(conn):
-    pass
+    return 50
 
 
 def get_workers(conn):
@@ -109,3 +136,13 @@ def add_building(conn, building_id):
 def delete_building(conn, building_id):
     with conn.cursor() as cursor:
         cursor.execute(f"DELETE FROM buildings WHERE id={building_id}")
+
+
+def retrieve_tasks(conn, progress):
+    with conn.cursor() as cursor:
+        cursor.execute(f"SELECT * FROM tasks WHERE progress=\'{progress}\'")
+        return cursor.fetchall()
+
+
+def add_new_services(conn):
+    pass

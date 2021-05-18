@@ -58,3 +58,16 @@ def building_layout(conn):
         technical = get_technical_buildings(conn)
         for building in technical:
             st.markdown(f"### {building[1]}")
+
+
+def tasks_layout(conn):
+    progress = st.selectbox("Прогресс",
+                             ['created', 'reviewed', 'rejected', 'assigned', 'work in progress', 'completed'])
+
+    for task in retrieve_tasks(conn, progress):
+        st.markdown(f"""
+        **{task[1]}**. **Принято на обработку:** {task[4]}. **Дедлайн:** {task[5]} \n
+        **Описание:** {task[2]}
+        """)
+        if progress == "created":
+            st.write("Feature coming")

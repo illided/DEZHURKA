@@ -16,6 +16,8 @@ if __name__ == '__main__':
     if state.newGame:
         tables_setup(conn)
         state.newGame = False
+    ps_date = str(state.date).split(" ")[0]
+
 
     st.sidebar.write(f"Бюджет: {state.money} руб.")
     st.sidebar.write(f"Дата: {str(state.date).split(' ')[0]}")
@@ -32,10 +34,11 @@ if __name__ == '__main__':
         building_layout(conn)
 
     if st.sidebar.button("Следующий день"):
-        total = count_income(conn) - count_lost(conn)
+        update_work(conn)
+        total = count_income(conn) - count_lost(conn, date=ps_date)
         state.money = state.money + total
         state.date = state.date + timedelta(days=1)
         state.difficulty = state.difficulty + (1 if random.randint(1, 4) == 4 else 0)
-        add_new_tasks(conn, state.difficulty, str(state.date).split(" ")[0])
+        add_new_tasks(conn, state.difficulty, ps_date)
         add_new_services(conn)
         rerun()

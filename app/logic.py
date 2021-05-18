@@ -86,12 +86,25 @@ def assign_task(conn, task_id):
 
 
 def count_income(conn):
-    return 100
+    with conn.cursor() as cursor:
+        cursor.execute("SELECT * FROM buildings")
+        return len(cursor.fetchall()) * 10
 
 
-def count_lost(conn):
-    return 50
+def count_lost(conn, date):
+    with conn.cursor() as cursor:
+        cursor.execute("SELECT qualification FROM workers")
+        lost = 0
+        for worker in cursor.fetchall():
+            lost += worker[0]
+        cursor.execute(f"SELECT * FROM tasks WHERE progress NOT IN ('completed', 'rejected') AND deadline > '{date}'::date")
+        lost += len(cursor.fetchall()) * 10
+    return lost
 
+def update_work(conn):
+    with conn.cursor() as cursor:
+        cursor.execute("UPDATE tasks SET progress = 'completed' WHERE progress='work in progress'")
+        cursor.execute("UPDATE tasks SET progress = 'work in progress' WHERE progress='assigned'")
 
 def get_workers(conn):
     cursor = conn.cursor()

@@ -1,6 +1,9 @@
 import random
 from random import choice
 
+num_of_services = 13
+
+
 def tables_setup(conn):
     with conn.cursor() as cursor:
         cursor.execute("""
@@ -27,6 +30,7 @@ def tables_setup(conn):
         """)
         cursor.execute("insert into services values (2, 'Починка электроснабжения', 'electrician')")
 
+
 def add_new_tasks(conn, difficulty, date):
     cursor = conn.cursor()
 
@@ -45,34 +49,40 @@ def add_new_tasks(conn, difficulty, date):
     tasks_assigned = [[*choice(tasks), building] for building in buildings if random.randint(1, 4) == 4]
 
     for task in tasks_assigned:
-        print(f"CALL create_task('{task[0]}', '{task[1]}', {task[2]}, {date})")
         cursor.execute(f"CALL create_task('{task[0]}', '{task[1]}', '{task[2]}', creation_date :='{date}')")
 
 
 def check_answer(conn, task_id, choosen_dif):
     cursor = conn.cursor()
 
-    cursor.execute(f"SELECT difficulty FROM possible_tasks WHERE id = {task_id}")
-    actual = cursor.fetchone()
+    cursor.execute(f"SELECT description FROM tasks WHERE id={task_id}")
+    description = cursor.fetchone()
+
+    cursor.execute(f"SELECT difficulty FROM possible_tasks WHERE description = '{description[0]}'")
+    actual = cursor.fetchone()[0]
     cursor.close()
 
     if actual == -1 and choosen_dif != -1 or actual > choosen_dif:
         return "wrong"
+    elif actual == -1:
+        return "ok_rejected"
     else:
         return "ok"
 
 
-# def review_tasks(conn):
-#     cursor = conn.cursor()
-#
-#     cursor.execute("SELECT * FROM currently_reviewing")
-#     tasks = cursor.fetchall()
-#     for task in tasks:
-#         result = check_answer(conn, task[0], task[1])
-#         if result == "ok":
-#             cursor.execute(f"SELECT * FROM tasks WHERE id={task[0]}")
-#             task = cursor.fetchone()
-#             cursor.execute(f"CALL assign_task()")
+def review_task(conn, task_id, chosen_dif):
+    with conn.cursor() as cursor:
+        cursor.execute(f"call review_task({task_id}, {chosen_dif})")
+
+
+def reject_task(conn, task_id):
+    with conn.cursor() as cursor:
+        cursor.execute(f"UPDATE tasks SET progress='rejected' WHERE id={task_id}")
+
+
+def assign_task(conn, task_id):
+    with conn.cursor() as cursor:
+        cursor.execute(f"select assign_task({task_id})")
 
 
 def count_income(conn):
@@ -144,5 +154,19 @@ def retrieve_tasks(conn, progress):
         return cursor.fetchall()
 
 
+def get_services(conn):
+    with conn.cursor() as cursor:
+        cursor.execute("SELECT * FROM services")
+        return cursor.fetchall()
+
+
 def add_new_services(conn):
-    pass
+    with conn.cursor() as cursor:
+        if random.randint(1, 4) == 4:
+            try:
+                cursor.execute(
+                    f"INSERT INTO services"
+                    f" SELECT * FROM possible_services"
+                    f" OFFSET {random.randint(0, num_of_services)} LIMIT 1")
+            except:
+                pass

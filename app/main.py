@@ -19,14 +19,15 @@ if __name__ == '__main__':
 
     st.sidebar.write(f"Бюджет: {state.money} руб.")
     st.sidebar.write(f"Дата: {str(state.date).split(' ')[0]}")
+    st.sidebar.write(f"Текущая сложность: {state.difficulty}")
 
     page = st.sidebar.selectbox("", ["Задания", "Работники", "Предоставляемые услуги", "Обслуживаемые здания"])
     if page == "Работники":
         workers_layout(conn)
     elif page == "Задания":
-        tasks_layout(conn)
-    # elif page == "Предоставляемые услуги":
-    #     services_layout()
+        tasks_layout(conn, state)
+    elif page == "Предоставляемые услуги":
+        services_layout(conn)
     elif page == "Обслуживаемые здания":
         building_layout(conn)
 
@@ -34,6 +35,7 @@ if __name__ == '__main__':
         total = count_income(conn) - count_lost(conn)
         state.money = state.money + total
         state.date = state.date + timedelta(days=1)
+        state.difficulty = state.difficulty + (1 if random.randint(1, 4) == 4 else 0)
         add_new_tasks(conn, state.difficulty, str(state.date).split(" ")[0])
         add_new_services(conn)
         rerun()

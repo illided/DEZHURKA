@@ -1,7 +1,6 @@
 import streamlit as st
 from logic import *
 
-
 def rerun():
     raise st.script_runner.RerunException(st.script_request_queue.RerunData(None))
 
@@ -60,14 +59,39 @@ def building_layout(conn):
             st.markdown(f"### {building[1]}")
 
 
-def tasks_layout(conn):
+def tasks_layout(conn, state):
     progress = st.selectbox("Прогресс",
-                             ['created', 'reviewed', 'rejected', 'assigned', 'work in progress', 'completed'])
+                            ['created', 'reviewed', 'rejected', 'assigned', 'work in progress', 'completed'])
 
     for task in retrieve_tasks(conn, progress):
         st.markdown(f"""
-        **{task[1]}**. **Принято на обработку:** {task[4]}. **Дедлайн:** {task[5]} \n
+        **Необходимый работник:**{task[1]}.\n
+        **Принято на обработку:** {task[4]}.\n
+        **Дедлайн:** {task[5]}\n
         **Описание:** {task[2]}
         """)
         if progress == "created":
-            st.write("Feature coming")
+            chosen_difficulty = st.slider("Сложность", -1, 10, key=task[0])
+            if st.button("Оценить", key=task[0]):
+                answer_check = check_answer(conn, task[0], chosen_difficulty)
+                if answer_check == "wrong":
+                    st.write("НЕПРАВИЛЬНАЯ СЛОЖНОСТЬ")
+                    state.money = state.money - 50
+                elif answer_check == "ok_rejected":
+                    reject_task(conn, task[0])
+                    rerun()
+                else:
+                    review_task(conn, task[0], chosen_difficulty)
+                    rerun()
+        if progress == 'reviewed':
+            if st.button("Назначить", key=task[0]):
+                try:
+                    assign_task(conn, task[0])
+                except:
+                    st.write("Нет работника способного взять это задание")
+
+
+def services_layout(conn):
+    st.write("Услуги:")
+    for service in get_services(conn):
+        st.write(service[1])

@@ -97,8 +97,9 @@ def count_lost(conn, date):
         lost = 0
         for worker in cursor.fetchall():
             lost += worker[0]
-        cursor.execute(f"SELECT * FROM tasks WHERE progress NOT IN ('completed', 'rejected') AND deadline > '{date}'::date")
+        cursor.execute(f"SELECT * FROM tasks WHERE progress NOT IN ('completed', 'rejected') AND deadline < '{date}'::date")
         lost += len(cursor.fetchall()) * 10
+        print(lost)
     return lost
 
 def update_work(conn):

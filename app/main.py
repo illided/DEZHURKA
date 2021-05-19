@@ -42,3 +42,5 @@ if __name__ == '__main__':
         add_new_tasks(conn, state.difficulty, ps_date)
         add_new_services(conn)
         rerun()
+
+    conn.close()
